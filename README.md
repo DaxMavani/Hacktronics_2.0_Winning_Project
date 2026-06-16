@@ -1,212 +1,292 @@
 # Smart Parking Controller on FPGA 🚗
 
-## Overview
-
-The Smart Parking Controller is a hardware-based parking occupancy monitoring system developed using **Verilog HDL** and implemented on the **Nexys4 DDR FPGA (Artix-7)**. The project was developed during **Hacktronics 2.0**, a 36-hour national-level VLSI hackathon organized by Anurag University, where it secured **2nd Place**.
-
-The system tracks parking occupancy in real time using sensor inputs, processes vehicle entry and exit events through a Finite State Machine (FSM), and displays the current occupancy count on a 7-segment display. The complete design was verified through simulation, synthesized and implemented in Xilinx Vivado, and successfully deployed on FPGA hardware.
+> 🏆 **2nd Place Winner – Hacktronics 2.0 (36-Hour National VLSI Hackathon)**  
+> Developed and deployed a Smart Parking Controller on a **Nexys4 DDR (Artix-7 FPGA)** using Verilog HDL and Xilinx Vivado.
 
 ---
 
-## Key Features
+## 📌 Project Overview
 
-* Real-time parking occupancy monitoring
-* FSM-based vehicle entry and exit control
-* 4-slot parking lot implementation
-* Hardware-efficient RTL architecture
-* Overflow and underflow protection
-* 7-segment display output
-* FPGA hardware deployment and validation
-* Low-power and low-resource implementation
+The Smart Parking Controller is an FPGA-based digital system designed to monitor parking occupancy in real time and indicate parking status through onboard LEDs and a 7-segment display.
+
+The project was developed during **Hacktronics 2.0**, a 36-hour VLSI-focused hackathon, where the primary objective was to create an optimized hardware solution with low resource utilization, low power consumption, and successful FPGA deployment.
+
+Unlike software-based parking systems, this design executes entirely in hardware, enabling deterministic and real-time operation.
 
 ---
 
-## System Architecture
+## 🎯 Problem Statement
+
+Traditional parking systems often rely on software controllers and microprocessors, introducing unnecessary latency and computational overhead.
+
+This project demonstrates how a lightweight FPGA architecture can:
+
+- Monitor parking slot occupancy in real time
+- Calculate occupied slots instantly
+- Detect parking full conditions
+- Display occupancy count on a 7-segment display
+- Operate with extremely low resource utilization and power consumption
+
+---
+
+## 🏗 System Architecture
 
 ```text
-Sensor Inputs
-      │
-      ▼
-+----------------+
-| Occupancy Logic|
-+----------------+
-      │
-      ▼
-+----------------+
-| FSM Controller |
-+----------------+
-      │
-      ▼
-+----------------+
-| Slot Counter   |
-+----------------+
-      │
-      ▼
-+----------------+
-| Display Driver |
-+----------------+
-      │
-      ▼
-7-Segment Display
+Sensor Inputs [3:0]
+          │
+          ▼
+     Popcount Module
+          │
+          ▼
+   Occupancy Counter
+          │
+          ▼
+     FSM Controller
+          │
+          ├── Full Indicator LED
+          │
+          ▼
+    Display Driver
+          │
+          ▼
+     7-Segment Display
 ```
 
 ---
 
-## Design Modules
+## 📂 RTL Modules
 
-### 1. Occupancy Detection
+### 1. parking_top.v
+Top-level integration module connecting all RTL blocks.
 
-Receives parking slot sensor inputs and determines the number of occupied parking spaces.
+### 2. popcount.v
+Counts the number of occupied parking slots.
 
-### 2. FSM Controller
-
-Controls system operation using state-based logic:
-
-* IDLE
-* ENTRY
-* EXIT
-
-The FSM ensures correct interpretation of parking events while preventing invalid state transitions.
-
-### 3. Parking Counter
-
-Maintains the occupancy count and handles:
-
-* Increment operation during vehicle entry
-* Decrement operation during vehicle exit
-* Full parking condition
-* Empty parking condition
-
-### 4. Display Driver
-
-Converts occupancy count into 7-segment display outputs for real-time visualization on FPGA hardware.
-
----
-
-## FPGA Implementation Flow
-
-The complete FPGA development cycle was followed:
+Example:
 
 ```text
-RTL Design
-    ↓
-Behavioral Simulation
-    ↓
-Synthesis
-    ↓
-Implementation
-    ↓
-Bitstream Generation
-    ↓
-Hardware Deployment
-    ↓
-FPGA Validation
+Sensor = 1011
+Occupied Count = 3
 ```
 
-Toolchain:
+### 3. fsm_controller.v
+Finite State Machine responsible for parking status detection.
 
-* Verilog HDL
-* Xilinx Vivado
-* Nexys4 DDR FPGA Board
-* Artix-7 FPGA
+States:
 
----
+```text
+NOT_FULL
+FULL
+```
 
-## Hardware Validation
-
-The design was successfully programmed onto the Nexys4 DDR FPGA board.
-
-Hardware resources used:
-
-* Switches → Parking slot sensors
-* LEDs → Status indication
-* 7-Segment Display → Occupancy count display
-* On-board 100 MHz Clock
-
-The system was validated under multiple occupancy conditions and demonstrated correct counting behavior in real time.
+### 4. display_driver.v
+Converts occupancy count into 7-segment display outputs.
 
 ---
 
-## Resource Utilization
+## 🧪 Functional Verification
 
-Post-implementation Vivado reports showed:
+The design was verified using a custom Verilog testbench in Xilinx Vivado.
 
-| Resource        | Used | Available |
-| --------------- | ---- | --------- |
-| Slice LUTs      | 4    | 63,400    |
-| Slice Registers | 1    | 126,800   |
-| FPGA Slices     | 1    | 15,850    |
-| BRAM            | 0    | 135       |
-| DSP Blocks      | 0    | 240       |
+### Simulation Waveform
 
-Device utilization:
+![Waveform](./Proofs/Waveform.png)
 
-* LUT Utilization: ~0.006%
-* Register Utilization: <0.001%
-* Slice Utilization: <0.01%
+The waveform confirms:
 
-These results demonstrate an extremely lightweight and resource-efficient RTL implementation.
+- Correct occupancy detection
+- Accurate count generation
+- Proper FSM transitions
+- Correct display outputs
 
 ---
 
-## Power Analysis
+## ⚙️ FPGA Implementation Flow
 
-Post-implementation power analysis:
+The complete RTL-to-hardware workflow was performed using Xilinx Vivado:
 
-| Metric                            | Value    |
-| --------------------------------- | -------- |
-| Total On-Chip Power               | ~0.08 W  |
-| Dynamic Power                     | ~0.008 W |
-| Static Power                      | ~0.072 W |
-| Dynamic Power Share               | ~11%     |
-| Static Power Share                | ~89%     |
-| I/O Contribution to Dynamic Power | ~93%     |
-
-The low dynamic power consumption indicates minimal switching activity and efficient hardware utilization.
+1. RTL Design
+2. Behavioral Simulation
+3. Synthesis
+4. Implementation
+5. Placement & Routing
+6. Power Analysis
+7. Bitstream Generation
+8. Hardware Deployment on Nexys4 DDR
 
 ---
 
-## Results
+## 📊 Resource Utilization
 
-* Successfully implemented on Nexys4 DDR FPGA
-* Verified through simulation and hardware testing
-* Demonstrated real-time parking occupancy monitoring
-* Achieved ultra-low FPGA resource utilization
-* Achieved ~0.08 W total on-chip power consumption
-* Secured **2nd Place** at Hacktronics 2.0 (36-Hour National VLSI Hackathon)
+### Post-Synthesis Results
 
----
+![Synthesis Report](./Proofs/Synthesis.png)
 
-## Learning Outcomes
+#### Resource Summary
 
-Through this project, the following concepts were explored:
+| Resource | Utilization |
+|-----------|------------|
+| LUTs | 4 |
+| Registers | 1 |
+| DSP Blocks | 0 |
+| BRAM | 0 |
 
-* Verilog HDL Design
-* RTL Development
-* FSM Design
-* FPGA Synthesis and Implementation
-* Constraint File (XDC) Management
-* Hardware Debugging
-* Resource Utilization Analysis
-* Power Analysis
-* FPGA-Based System Validation
+### Key Observation
 
----
+The complete parking controller was implemented using only:
 
-## Future Improvements
+- **4 LUTs**
+- **1 Flip-Flop**
 
-* Multi-level parking support
-* Sensor debouncing and filtering
-* XADC-based real sensor integration
-* UART-based monitoring
-* IoT-enabled parking dashboard
-* Dynamic parking allocation algorithms
+demonstrating an extremely lightweight FPGA architecture.
 
 ---
 
-## Author
+## 🔋 Power Analysis
+
+### Vivado Power Report
+
+![Power Report](./Proofs/Power_Report.png)
+
+### Measured Results
+
+| Metric | Value |
+|----------|---------|
+| Total On-Chip Power | 0.08 W |
+| Dynamic Power | 0.008 W |
+| Static Power | 0.072 W |
+| Junction Temperature | 25.4°C |
+| Thermal Margin | 59.6°C |
+
+### Dynamic Power Breakdown
+
+| Component | Contribution |
+|------------|------------|
+| I/O | 93% |
+| Clocks | 5% |
+| Signals | 1% |
+| Logic | <1% |
+
+### Key Insight
+
+The logic consumed less than:
+
+```text
+0.008 Watts
+```
+
+indicating highly optimized combinational and sequential logic implementation.
+
+---
+
+## 🗺 FPGA Floorplanning
+
+### Placement & Routing View
+
+![Floorplan](./Proofs/Floorplanning.png)
+
+Post-implementation floorplanning generated by Vivado showing successful placement and routing on the Artix-7 FPGA fabric.
+
+---
+
+## 🎥 Hardware Demonstration
+
+The design was successfully programmed and validated on a:
+
+```text
+Nexys4 DDR FPGA Development Board
+```
+
+### Hardware Validation Video
+
+📹 [Hardware Execution](./Proofs/Hardware_Execution.mp4)
+
+Verified Features:
+
+- Real-time occupancy detection
+- Correct parking count display
+- Full condition indication
+- Stable FPGA operation
+
+---
+
+## 🏆 Hackathon Achievement
+
+### Hacktronics 2.0
+
+- Duration: 36 Hours
+- Domain: VLSI & FPGA Design
+- Platform: Nexys4 DDR (Artix-7 FPGA)
+
+### Result
+
+🥈 **2nd Place Winner**
+
+### Certificate
+
+![Certificate](./Proofs/Certificate.jpeg)
+
+---
+
+## 🚀 Skills Demonstrated
+
+### Hardware Design
+
+- Verilog HDL
+- RTL Design
+- FSM Design
+- Combinational Logic
+- Sequential Logic
+
+### FPGA Development
+
+- Xilinx Vivado
+- Synthesis
+- Implementation
+- Floorplanning
+- Timing Analysis
+- Power Analysis
+
+### Verification
+
+- Testbench Development
+- Functional Simulation
+- Waveform Analysis
+
+### Hardware Deployment
+
+- Bitstream Generation
+- FPGA Programming
+- Hardware Validation
+
+---
+
+## 📈 Project Highlights
+
+✅ 2nd Place at a National-Level VLSI Hackathon
+
+✅ Complete RTL → FPGA Deployment Flow
+
+✅ Successfully Deployed on Nexys4 DDR FPGA
+
+✅ Only 4 LUTs and 1 Register Utilized
+
+✅ Total On-Chip Power Consumption of 0.08 W
+
+✅ Dynamic Logic Power of Only 0.008 W
+
+✅ Hardware-Validated Real-Time Operation
+
+---
+
+## 👨‍💻 Author
 
 **Daksh Mavani**
 
-Hacktronics 2.0 – Team Horizon
-2nd Place Winner 🥈
+Electronics & Communication Engineering  
+FPGA • VLSI • Embedded Systems
+
+LinkedIn: *Add your LinkedIn profile*  
+GitHub: *Add your GitHub profile*
+
+---
