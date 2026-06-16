@@ -284,9 +284,6 @@ Verified Features:
 **Daksh Mavani**
 
 Electronics & Communication Engineering  
-FPGA • VLSI • Embedded Systems
+FPGA • VLSI 
 
-LinkedIn: *Add your LinkedIn profile*  
-GitHub: *Add your GitHub profile*
-
----
+LinkedIn: *https://www.linkedin.com/in/daksh-mavani/*
